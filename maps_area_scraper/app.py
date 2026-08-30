@@ -5,20 +5,19 @@ import io
 import json
 import math
 import os
-import re
 import threading
 import time
 from collections import deque
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import quote_plus
+import urllib.parse
+import urllib.request
 from uuid import uuid4
 
 from flask import Flask, Response, jsonify, redirect, render_template, request, url_for
-from scrapling.fetchers import DynamicFetcher
 
 import queue_store as store
-from area_engine import AreaConfig, categories_for, detail_place, discover_task, grid_points, open_worker_session
+from area_engine import AreaConfig, BlockedError, categories_for, detail_place, discover_task, grid_points, open_worker_session
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -66,6 +65,7 @@ def log(job_id: str, message: str) -> None:
 def config_from_form(geometry: dict) -> AreaConfig:
     return AreaConfig(
         geometry=geometry, coverage=request.form.get("coverage", "deep"),
+        proxy=request.form.get("proxy", "").strip(),
         custom_categories=split_values(request.form.get("custom_categories", "")),
         max_results=max(1, min(300000, int(request.form.get("max_results", "50000")))),
         results_per_query=max(1, min(40, int(request.form.get("results_per_query", "15")))),
@@ -127,13 +127,29 @@ def _restart_session(job_id: str, worker_number: int, config: AreaConfig,
     return None
 
 
+def _handle_block(job_id: str, worker_number: int, stop_event: threading.Event, exc: BlockedError) -> None:
+    """Pause the whole job when Google starts serving CAPTCHA/block pages."""
+    log(job_id, f"W{worker_number} BLOCKED: {exc}")
+    if store.job_status(job_id) == "running":
+        store.set_job_status(job_id, "blocked", str(exc)[:300])
+        log(job_id, "Job paused automatically. Wait a few minutes / change IP or proxy, then press Resume.")
+    stop_event.set()
+
+
 def worker_loop(job_id: str, worker_number: int, config: AreaConfig, stop_event: threading.Event,
                 gate: SharedRateGate) -> None:
     session = None
     try:
         session = open_worker_session(config)
         log(job_id, f"Worker {worker_number} browser session ready.")
+        last_stale_check = 0.0
         while not stop_event.is_set() and store.job_status(job_id) == "running":
+            now = time.monotonic()
+            if worker_number == 1 and now - last_stale_check > 120:
+                last_stale_check = now
+                recovered = store.reset_stale(job_id, max_age_seconds=600)
+                if recovered:
+                    log(job_id, f"Watchdog requeued {recovered} stale task(s) stuck in running state.")
             with RUNNER_LOCK:
                 current_count = RUNNERS.get(job_id, {}).get("lead_count", 0)
             if current_count >= config.max_results:
@@ -160,6 +176,10 @@ def worker_loop(job_id: str, worker_number: int, config: AreaConfig, stop_event:
                     unique_added = store.save_places(job_id, places)
                     store.finish_task(task["id"], len(places))
                     log(job_id, f"W{worker_number} discover {task['id']}: {task['category']} | {len(places)} URLs | +{unique_added} unique")
+                except BlockedError as exc:
+                    store.requeue_task(task["id"])
+                    _handle_block(job_id, worker_number, stop_event, exc)
+                    break
                 except Exception as exc:
                     err_msg = str(exc)
                     store.finish_task(task["id"], 0, err_msg)
@@ -195,6 +215,10 @@ def worker_loop(job_id: str, worker_number: int, config: AreaConfig, stop_event:
                             if job_id in RUNNERS:
                                 RUNNERS[job_id]["lead_count"] += added
                     log(job_id, f"W{worker_number} detail {place['id']}: {result['status']} | +{added} lead")
+                except BlockedError as exc:
+                    store.requeue_place(place["id"])
+                    _handle_block(job_id, worker_number, stop_event, exc)
+                    break
                 except Exception as exc:
                     err_msg = str(exc)
                     store.finish_place(place["id"], "failed", err_msg)
@@ -262,20 +286,32 @@ def index() -> str:
     return render_template("index.html", jobs=store.recent_jobs())
 
 
+@app.get("/favicon.ico")
+def favicon() -> Response:
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#d9f554"/><text x="2" y="12" font-size="10" font-weight="bold">AM</text></svg>'
+    return Response(svg, mimetype="image/svg+xml", headers={"Cache-Control": "public, max-age=86400"})
+
+
 @app.post("/geocode")
 def geocode() -> Response:
+    """Lightweight geocoding via Nominatim (OpenStreetMap) — no browser launch needed."""
     place = request.form.get("place", "").strip()
     if not place:
         return jsonify({"error": "Enter a city or PIN code."}), 400
-    holder = {"url": ""}
-    def page_action(page):
-        page.wait_for_timeout(2200); holder["url"] = page.url
+    query = urllib.parse.urlencode({"q": place, "format": "json", "limit": 1})
+    req = urllib.request.Request(
+        f"https://nominatim.openstreetmap.org/search?{query}",
+        headers={"User-Agent": "AreaBusinessMiner/1.0 (self-hosted lead tool)"},
+    )
     try:
-        DynamicFetcher.fetch(f"https://www.google.com/maps/search/{quote_plus(place)}", headless=True, wait=700, timeout=45000, network_idle=False, page_action=page_action)
-        match = re.search(r"@(-?\d+\.\d+),(-?\d+\.\d+)", holder["url"])
-        return jsonify({"lat": float(match.group(1)), "lng": float(match.group(2)), "label": place}) if match else (jsonify({"error": "Location not found."}), 404)
+        with urllib.request.urlopen(req, timeout=12) as response:
+            results = json.loads(response.read().decode())
+        if not results:
+            return jsonify({"error": "Location not found."}), 404
+        top = results[0]
+        return jsonify({"lat": float(top["lat"]), "lng": float(top["lon"]), "label": top.get("display_name", place)})
     except Exception as exc:
-        return jsonify({"error": str(exc)[:180]}), 502
+        return jsonify({"error": f"Geocoding failed: {str(exc)[:160]}"}), 502
 
 
 def _geometry_size(geometry: dict) -> dict:
@@ -368,11 +404,59 @@ def cancel(job_id: str) -> Response:
 def resume(job_id: str) -> Response:
     if not store.get_job(job_id):
         return "Job not found", 404
+    store.reset_stale(job_id, max_age_seconds=0)
     if launch_job(job_id):
         log(job_id, "Resumed from persistent task queue.")
     else:
         log(job_id, "Resume ignored because workers are already active.")
     return redirect(url_for("progress", job_id=job_id))
+
+
+@app.post("/delete/<job_id>")
+def delete_job(job_id: str) -> Response:
+    with RUNNER_LOCK:
+        if job_id in RUNNERS:
+            RUNNERS[job_id]["stop"].set()
+    store.set_job_status(job_id, "canceled")
+    if not store.delete_job(job_id):
+        return jsonify({"error": "Job not found"}), 404
+    try:
+        store.vacuum()
+    except Exception:
+        pass
+    return jsonify({"status": "deleted"})
+
+
+@app.post("/dedup/<job_id>")
+def dedup(job_id: str) -> Response:
+    """Skip pending places already scraped in previous jobs (cross-job dedup)."""
+    if not store.get_job(job_id):
+        return jsonify({"error": "Job not found"}), 404
+    skipped = store.mark_seen_places(job_id)
+    log(job_id, f"Cross-job dedup: skipped {skipped} place(s) already scraped in earlier jobs.")
+    return jsonify({"skipped": skipped})
+
+
+def _export_filters() -> dict:
+    return {
+        "tier": request.args.get("tier", "").strip(),
+        "category": request.args.get("category", "").strip(),
+        "require_phone": request.args.get("phone") == "1",
+        "require_email": request.args.get("email") == "1",
+        "require_website": request.args.get("website") == "1",
+        "search": request.args.get("q", "").strip(),
+    }
+
+
+@app.get("/api/jobs/<job_id>/leads")
+def api_leads(job_id: str) -> Response:
+    if not store.get_job(job_id):
+        return jsonify({"error": "Job not found"}), 404
+    offset = max(0, int(request.args.get("offset", 0)))
+    limit = max(1, min(200, int(request.args.get("limit", 50))))
+    data = store.browse_leads(job_id, offset=offset, limit=limit, **_export_filters())
+    data["categories"] = store.job_categories(job_id)
+    return jsonify(data)
 
 
 @app.post("/retry-failed/<job_id>")
@@ -392,11 +476,12 @@ def csv_value(value):
 def download_csv(job_id: str) -> Response:
     if not store.get_job(job_id):
         return "Job not found", 404
+    filters = _export_filters()
     def generate():
         buffer = io.StringIO()
         writer = csv.DictWriter(buffer, fieldnames=CSV_FIELDS, extrasaction="ignore")
         writer.writeheader(); yield "\ufeff" + buffer.getvalue(); buffer.seek(0); buffer.truncate(0)
-        for lead in store.iter_leads(job_id):
+        for lead in store.iter_leads_filtered(job_id, **filters):
             writer.writerow({field: csv_value(lead.get(field, "")) for field in CSV_FIELDS})
             yield buffer.getvalue(); buffer.seek(0); buffer.truncate(0)
     return Response(generate(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename={job_id}_area_businesses.csv"})
@@ -406,7 +491,8 @@ def download_csv(job_id: str) -> Response:
 def download_jsonl(job_id: str) -> Response:
     if not store.get_job(job_id):
         return "Job not found", 404
-    return Response((json.dumps(lead, ensure_ascii=False) + "\n" for lead in store.iter_leads(job_id)), mimetype="application/x-ndjson",
+    filters = _export_filters()
+    return Response((json.dumps(lead, ensure_ascii=False) + "\n" for lead in store.iter_leads_filtered(job_id, **filters)), mimetype="application/x-ndjson",
                     headers={"Content-Disposition": f"attachment; filename={job_id}_area_businesses.jsonl"})
 
 

@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import math
 import sys
-import threading
 import re
 import random
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -85,10 +83,38 @@ class AreaConfig:
     enrich_websites: bool = False
     headless: bool = True
     real_chrome: bool = False
+    proxy: str = ""  # optional: http://user:pass@host:port or socks5://host:port
+
+
+class BlockedError(RuntimeError):
+    """Google served a CAPTCHA / unusual-traffic block page."""
+
+
+BLOCK_CHECK_SCRIPT = r"""
+() => {
+  const t = (document.title || '').toLowerCase();
+  const b = (document.body ? document.body.innerText.slice(0, 3000) : '').toLowerCase();
+  const u = location.href.toLowerCase();
+  if (u.includes('/sorry/') || u.includes('recaptcha')) return 'block-url';
+  if (t.includes('unusual traffic') || b.includes('unusual traffic from your computer')) return 'unusual-traffic';
+  if (b.includes("i'm not a robot") || document.querySelector('form#captcha-form, iframe[src*="recaptcha"]')) return 'captcha';
+  return '';
+}
+"""
+
+
+def check_blocked(page) -> None:
+    """Raise BlockedError if the current page is a Google block/CAPTCHA page."""
+    try:
+        marker = page.evaluate(BLOCK_CHECK_SCRIPT)
+    except Exception:
+        return
+    if marker:
+        raise BlockedError(f"Google block detected ({marker}) — lower rate limit / change IP, then Resume")
 
 
 def open_worker_session(config: AreaConfig) -> DynamicSession:
-    session = DynamicSession(
+    options = dict(
         headless=config.headless,
         real_chrome=config.real_chrome,
         timeout=25000,
@@ -97,6 +123,14 @@ def open_worker_session(config: AreaConfig) -> DynamicSession:
         disable_resources=True,
         extra_flags=["--disable-blink-features=AutomationControlled"],
     )
+    if config.proxy:
+        options["proxy"] = config.proxy
+    try:
+        session = DynamicSession(**options)
+    except TypeError:
+        # older scrapling versions without proxy kwarg
+        options.pop("proxy", None)
+        session = DynamicSession(**options)
     session.start()
     return session
 
@@ -243,6 +277,7 @@ def discover_task(session: DynamicSession, config: AreaConfig, point: tuple[floa
             page.locator('[role="feed"], a[href*="/maps/place/"]').first.wait_for(state="attached", timeout=10000)
         except Exception:
             page.wait_for_timeout(900)
+        check_blocked(page)
         raw_places = page.evaluate(COLLECT_SCRIPT, {"maxResults": config.results_per_query})
         holder["places"] = [
             {
@@ -281,6 +316,7 @@ def detail_place(session: DynamicSession, config: AreaConfig, place: dict,
                 )
             except Exception:
                 pass
+            check_blocked(page)
             page.wait_for_timeout(config.page_delay_ms + attempt * 250)
             holder["lead"] = page.evaluate(DETAIL_SCRIPT, {
                 "fallbackName": place.get("fallback_name", ""),
@@ -301,6 +337,8 @@ def detail_place(session: DynamicSession, config: AreaConfig, place: dict,
             if holder["lead"] and holder["lead"].get("name"):
                 candidate = holder["lead"]
                 break
+        except BlockedError:
+            raise
         except Exception as exc:
             last_error = str(exc)[:300]
     if not candidate:
@@ -333,136 +371,3 @@ def detail_place(session: DynamicSession, config: AreaConfig, place: dict,
     candidate.update({"lead_score": score, "lead_tier": tier})
     return {"status": "complete", "lead": candidate, "error": ""}
 
-
-def crawl_task(session: DynamicSession, config: AreaConfig, point: tuple[float, float], category: str,
-               on_lead: Callable[[dict], None], logger: Callable[[str], None] = print,
-               should_cancel: Callable[[], bool] = lambda: False) -> dict:
-    lat, lon = point
-    search = SearchConfig(
-        categories=[category], locations=[""], max_results=config.results_per_query,
-        location_mode="coordinates", latitude=lat, longitude=lon,
-        radius_km=max(0.4, config.grid_spacing_km * 0.8), headless=config.headless,
-        real_chrome=config.real_chrome,
-    )
-    url = build_search_url(category, search)
-    stats = {"raw": 0, "kept": 0, "failures": 0}
-
-    def page_action(page):
-        page.wait_for_timeout(1800)
-        places = page.evaluate(COLLECT_SCRIPT, {"maxResults": config.results_per_query})
-        stats["raw"] = len(places)
-        for place in places:
-            if should_cancel():
-                break
-            lead = None
-            last_error = "missing detail fields"
-            for attempt in range(config.detail_retries + 1):
-                try:
-                    low, high = sorted((config.random_delay_min_ms, config.random_delay_max_ms))
-                    if high:
-                        time.sleep(random.randint(max(0, low), max(0, high)) / 1000)
-                    page.goto(place["href"], wait_until="domcontentloaded", timeout=30000)
-                    page.wait_for_timeout(config.page_delay_ms + attempt * 450)
-                    candidate = page.evaluate(DETAIL_SCRIPT, {
-                        "fallbackName": place.get("fallbackName", ""),
-                        "fallbackText": place.get("fallbackText", ""),
-                        "mapsUrl": place["href"],
-                    })
-                    if candidate.get("name"):
-                        lead = candidate
-                        break
-                except Exception as exc:
-                    last_error = str(exc)[:220]
-            if not lead:
-                stats["failures"] += 1
-                logger(f"FAILED - {category}: {last_error}")
-                continue
-            recover_coordinates(lead)
-            if lead.get("latitude") is None or lead.get("longitude") is None:
-                continue
-            if not point_in_area((float(lead["latitude"]), float(lead["longitude"])), config.geometry):
-                continue
-            lead["category"] = lead.get("category") or category.title()
-            lead["discovery_category"] = category
-            lead["grid_latitude"], lead["grid_longitude"] = lat, lon
-            if config.enrich_websites and lead.get("website"):
-                _enrich_website(lead, logger)
-            else:
-                _contact_confidence(lead)
-            score, tier = _score(lead)
-            lead.update({"lead_score": score, "lead_tier": tier})
-            on_lead(lead)
-            stats["kept"] += 1
-
-    session.fetch(url, wait=500, page_action=page_action)
-    return stats
-
-
-def crawl_area(config: AreaConfig, logger: Callable[[str], None] = print,
-               on_lead: Callable[[dict], None] | None = None,
-               should_cancel: Callable[[], bool] = lambda: False) -> dict:
-    points = grid_points(config.geometry, max(0.25, config.grid_spacing_km))
-    categories = categories_for(config)
-    tasks = [(point, category) for point in points for category in categories][:config.max_queries]
-    logger(f"AREA - {len(points)} grid points, {len(categories)} category searches, {len(tasks)} queries scheduled")
-    leads: list[dict] = []
-    seen: set[str] = set()
-    failures = 0
-    lock = threading.RLock()
-    done = threading.Event()
-
-    def process(point: tuple[float, float], category: str) -> None:
-        nonlocal failures
-        if should_cancel() or done.is_set():
-            return
-        lat, lon = point
-        child = SearchConfig(
-            categories=[category], locations=[""], max_results=config.results_per_query,
-            location_mode="coordinates", latitude=lat, longitude=lon,
-            radius_km=max(0.5, config.grid_spacing_km * 0.8), parallel_workers=1,
-            detail_retries=config.detail_retries, page_delay_ms=config.page_delay_ms,
-            random_delay_min_ms=config.random_delay_min_ms, random_delay_max_ms=config.random_delay_max_ms,
-            requests_per_minute=config.requests_per_minute, enrich_websites=config.enrich_websites,
-            headless=config.headless, real_chrome=config.real_chrome,
-        )
-
-        def accept(lead: dict) -> None:
-            recover_coordinates(lead)
-            if lead.get("latitude") is None or lead.get("longitude") is None:
-                return
-            if not point_in_area((float(lead["latitude"]), float(lead["longitude"])), config.geometry):
-                return
-            lead["category"] = lead.get("category") or category.title()
-            lead["discovery_category"] = category
-            lead["grid_latitude"], lead["grid_longitude"] = lat, lon
-            key = lead_key(lead)
-            with lock:
-                if key in seen or len(leads) >= config.max_results:
-                    return
-                seen.add(key)
-                leads.append(lead)
-                if on_lead:
-                    on_lead(lead)
-                logger(f"KEEP - {len(leads)}/{config.max_results}: {lead.get('name')} [{lead.get('category')}]")
-                if len(leads) >= config.max_results:
-                    done.set()
-
-        result = scrape_google_maps(child, lambda message: logger(f"{category} @ {lat:.4f},{lon:.4f} - {message}"),
-                                    on_lead=accept, should_cancel=lambda: should_cancel() or done.is_set())
-        with lock:
-            failures += result.get("failures", 0)
-
-    workers = max(1, min(4, config.workers))
-    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="area-cell") as pool:
-        futures = [pool.submit(process, point, category) for point, category in tasks]
-        for future in as_completed(futures):
-            if should_cancel() or done.is_set():
-                for pending in futures:
-                    pending.cancel()
-            try:
-                future.result()
-            except Exception as exc:
-                failures += 1
-                logger(f"FAILED - Area query: {str(exc)[:140]}")
-    logger(f"COMPLETE - {len(leads)} in-boundary businesses, {failures} failed place URLs")
-    return {"leads": leads, "failures": failures, "grid_points": len(points), "queries": len(tasks)}
