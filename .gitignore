@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.log
+*.pid
+*.db
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Personal/sensitive files
+pan.pdf
+
+# Replit / local caches
+.local/
+node_modules/
+.venv/
+venv/
+
+# Build/cache
+dist/
+build/
+*.tmp

@@ -1,0 +1,13 @@
+kind = "api"
+previewPath = "/"
+title = "Area Business Miner"
+version = "1.0.0"
+id = "3B4_FFSkEVBkAeYMFRJ2e"
+
+[[services]]
+localPort = 5000
+name = "API Server"
+paths = ["/"]
+
+[services.development]
+run = "export LD_LIBRARY_PATH=\"/nix/store/gpb87pb8s826aggy1s3f352alp40dkj8-nspr-4.36/lib:/nix/store/sisfq9wihyqqjzmrpik9b4xksifw97ha-libxkbcommon-1.8.1/lib:/nix/store/24w3s75aa2lrvvxsybficn8y3zxd27kp-mesa-libgbm-25.1.0/lib:/nix/store/0bbg0gbgw2m3clxrq57q5v2hnzz660bj-systemd-254.10/lib\" && cd /home/runner/workspace/maps_area_scraper && uv run python3 app.py"

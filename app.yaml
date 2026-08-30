@@ -1,0 +1,4 @@
+kind: wasmer.io/App.v0
+name: Maps_area_scraper
+owner: gamintor
+package: .

@@ -1,0 +1,180 @@
+[18:29:05] W1 discovery 5361 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:10] W1 discovery 5362 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:12] W1 discovery 5363 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:13] W6 discover 5360: plumber | 36 URLs | +0 unique
+[18:29:16] W5 discover 5359: plumber | 36 URLs | +1 unique
+[18:29:18] W1 discovery 5364 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:21] W1 discovery 5367 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:27] W1 discovery 5368 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:30] W6 discover 5365: plumber | 36 URLs | +0 unique
+[18:29:36] W1 discovery 5369 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:36] W5 discover 5366: plumber | 36 URLs | +0 unique
+[18:29:42] W1 discovery 5371 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5373 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5374 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5375 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5376 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5377 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5378 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5379 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5380 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:43] W1 discovery 5381 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5382 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5383 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5384 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5385 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5386 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5387 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5388 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5389 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5390 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5391 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5392 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5393 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5394 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5395 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5396 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5397 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W1 discovery 5398 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:44] W6 discover 5370: plumber | 36 URLs | +0 unique
+[18:29:45] W1 discovery 5399 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5401 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5402 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5403 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5404 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5405 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5406 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5407 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5408 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5409 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5410 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5411 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:45] W1 discovery 5412 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:46] W1 discovery 5413 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:47] W5 discover 5372: plumber | 36 URLs | +0 unique
+[18:29:48] W1 discovery 5414 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:48] W1 discovery 5416 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:49] W1 discovery 5417 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:29:54] W6 discover 5400: plumber | 36 URLs | +2 unique
+[18:29:57] W5 discover 5415: plumber | 33 URLs | +0 unique
+[18:30:00] W1 discovery 5418 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:03] W1 discovery 5421 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:10] W1 discovery 5422 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:12] W1 discovery 5423 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:14] W5 discover 5420: plumber | 36 URLs | +1 unique
+[18:30:15] W6 discover 5419: plumber | 36 URLs | +0 unique
+[18:30:18] W1 discovery 5424 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:21] W1 discovery 5427 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:25] W1 discovery 5428 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:27] W1 discovery 5429 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:30] W5 discover 5425: plumber | 36 URLs | +1 unique
+[18:30:36] W1 discovery 5430 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:37] W1 discovery 5432 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:42] W1 discovery 5433 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:43] W1 discovery 5434 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:43] W1 discovery 5435 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:43] W1 discovery 5436 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:43] W1 discovery 5437 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:43] W1 discovery 5438 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:43] W1 discovery 5439 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:43] W1 discovery 5440 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5441 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5442 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5443 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5444 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5445 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5446 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5447 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5448 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5449 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5450 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5451 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5452 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5453 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:44] W1 discovery 5454 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5455 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5456 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W5 discover 5431: plumber | 36 URLs | +0 unique
+[18:30:45] W1 discovery 5457 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5459 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5460 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5461 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5462 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5463 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5464 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5465 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5466 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5467 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5468 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5469 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5470 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:45] W1 discovery 5471 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:46] W1 discovery 5472 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:46] W1 discovery 5473 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:47] W1 discovery 5474 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:48] W1 discovery 5475 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:48] W1 discovery 5476 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:49] W1 discovery 5477 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:30:52] W6 discover 5426: plumber | 36 URLs | +0 unique
+[18:30:54] W5 discover 5458: plumber | 36 URLs | +1 unique
+[18:31:00] W1 discovery 5478 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:05] W1 discovery 5481 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:10] W1 discovery 5482 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:12] W1 discovery 5483 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:12] W6 discover 5479: plumber | 36 URLs | +0 unique
+[18:31:14] W5 discover 5480: plumber | 36 URLs | +0 unique
+[18:31:20] W1 discovery 5484 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:22] W1 discovery 5487 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:25] W1 discovery 5488 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:27] W1 discovery 5489 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:28] W5 discover 5486: plumber | 36 URLs | +1 unique
+[18:31:37] W1 discovery 5490 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:42] W1 discovery 5492 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:43] W1 discovery 5493 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:43] W1 discovery 5494 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:43] W1 discovery 5495 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:43] W1 discovery 5496 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:43] W1 discovery 5497 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:43] W1 discovery 5498 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:43] W1 discovery 5499 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5500 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5501 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5502 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5503 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5504 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5505 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5506 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5507 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5508 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5509 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5510 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5511 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5512 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5513 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:44] W1 discovery 5514 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5515 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W6 discover 5485: plumber | 36 URLs | +0 unique
+[18:31:45] W1 discovery 5516 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5518 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5519 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5520 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5521 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5522 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5523 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5524 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5525 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5526 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5527 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5528 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5529 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:45] W1 discovery 5530 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:46] W1 discovery 5531 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:46] W1 discovery 5532 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:46] W5 discover 5491: plumber | 36 URLs | +1 unique
+[18:31:46] W1 discovery 5533 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:47] W1 discovery 5535 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:48] W1 discovery 5536 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:48] W1 discovery 5537 failed: BrowserContext.new_page: Target page, context or browser has been closed
+[18:31:54] W6 discover 5517: plumber | 36 URLs | +0 unique
+[18:31:58] W5 discover 5534: plumber | 36 URLs | +0 unique
+[18:32:00] W1 discovery 5538 failed: BrowserContext.new_page: Target page, context or browser has been closed
