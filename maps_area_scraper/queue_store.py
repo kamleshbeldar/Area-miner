@@ -314,16 +314,25 @@ def save_leads(job_id: str, leads: list[dict], maximum: int | None = None) -> in
         category = str(lead.get("category") or lead.get("discovery_category") or "Uncategorized")
         lead["category"] = category
         rows.append((job_id, lead_key(lead), category, json.dumps(lead, ensure_ascii=False), now))
-    with connect() as connection:
+    connection = connect()
+    try:
         connection.execute("BEGIN IMMEDIATE")
         if maximum is not None:
             existing = connection.execute("SELECT COUNT(*) FROM area_leads WHERE job_id=?", (job_id,)).fetchone()[0]
             rows = rows[:max(0, maximum - existing)]
         if not rows:
+            connection.commit()
             return 0
         before = connection.total_changes
         connection.executemany("INSERT OR IGNORE INTO area_leads(job_id,unique_key,category,data_json,created_at) VALUES(?,?,?,?,?)", rows)
-        return connection.total_changes - before
+        added = connection.total_changes - before
+        connection.commit()
+        return added
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
 
 
 def lead_count(job_id: str) -> int:
@@ -393,3 +402,88 @@ def iter_leads(job_id: str, batch_size: int = 1000) -> Iterator[dict]:
 
 def has_open_work(job_id: str) -> bool:
     return discovery_open(job_id) or details_open(job_id)
+
+
+def reset_stale(job_id: str, max_age_seconds: int = 600) -> int:
+    """Requeue tasks/places stuck in 'running' longer than max_age_seconds (crashed worker recovery)."""
+    cutoff = time.time() - max_age_seconds
+    with connect() as connection:
+        tasks = connection.execute(
+            "UPDATE area_tasks SET status='pending',started_at=NULL WHERE job_id=? AND status='running' AND started_at IS NOT NULL AND started_at<?",
+            (job_id, cutoff)).rowcount
+        places = connection.execute(
+            "UPDATE area_places SET status='pending',started_at=NULL WHERE job_id=? AND status='running' AND started_at IS NOT NULL AND started_at<?",
+            (job_id, cutoff)).rowcount
+        return tasks + places
+
+
+def mark_seen_places(job_id: str) -> int:
+    """Cross-job dedup: mark pending places already detailed in OTHER jobs as skipped."""
+    with connect() as connection:
+        return connection.execute(
+            """UPDATE area_places SET status='skipped', last_error='already scraped in previous job', completed_at=?
+               WHERE job_id=? AND status='pending' AND unique_key IN (
+                   SELECT unique_key FROM area_places WHERE job_id!=? AND status='complete')""",
+            (time.time(), job_id, job_id)).rowcount
+
+
+def delete_job(job_id: str) -> bool:
+    """Delete a job and all of its tasks, places, leads and logs."""
+    with connect() as connection:
+        deleted = connection.execute("DELETE FROM area_jobs WHERE id=?", (job_id,)).rowcount
+        for table in ("area_tasks", "area_places", "area_leads", "area_logs"):
+            connection.execute(f"DELETE FROM {table} WHERE job_id=?", (job_id,))
+    return bool(deleted)
+
+
+def vacuum() -> None:
+    """Reclaim disk space after deletes. Cheap no-op when nothing to reclaim."""
+    connection = sqlite3.connect(DB_PATH, timeout=60)
+    try:
+        connection.execute("VACUUM")
+    finally:
+        connection.close()
+
+
+def _lead_matches(lead: dict, tier: str = "", category: str = "", require_phone: bool = False,
+                  require_email: bool = False, require_website: bool = False, search: str = "") -> bool:
+    if tier and str(lead.get("lead_tier", "")).lower() != tier.lower():
+        return False
+    if category and category.lower() not in str(lead.get("category", "")).lower():
+        return False
+    if require_phone and not lead.get("phone"):
+        return False
+    if require_email and not (lead.get("email") or lead.get("email_maps")):
+        return False
+    if require_website and not lead.get("website"):
+        return False
+    if search:
+        haystack = " ".join(str(lead.get(k, "")) for k in ("name", "category", "address", "phone", "website")).lower()
+        if search.lower() not in haystack:
+            return False
+    return True
+
+
+def iter_leads_filtered(job_id: str, **filters) -> Iterator[dict]:
+    for lead in iter_leads(job_id):
+        if _lead_matches(lead, **filters):
+            yield lead
+
+
+def browse_leads(job_id: str, offset: int = 0, limit: int = 50, **filters) -> dict:
+    """Paginated, filtered lead listing for the UI. Streams the job's leads once."""
+    matched = 0
+    page: list[dict] = []
+    for lead in iter_leads(job_id):
+        if not _lead_matches(lead, **filters):
+            continue
+        if offset <= matched < offset + limit:
+            page.append(lead)
+        matched += 1
+    return {"total": matched, "offset": offset, "limit": limit, "leads": page}
+
+
+def job_categories(job_id: str) -> list[str]:
+    with connect() as connection:
+        rows = connection.execute("SELECT DISTINCT category FROM area_leads WHERE job_id=? ORDER BY category", (job_id,)).fetchall()
+    return [row["category"] for row in rows if row["category"]]
